@@ -41,17 +41,53 @@ def edit_distance_dp(pattern, text):
     final_distance = dp_matrix[n][m]
     return dp_matrix, final_distance
 
+def get_cigar(pattern, text, dp_matrix):
+    """
+    Performs a traceback on the DP matrix to generate the expanded CIGAR string.
+    """
+    i = len(pattern)
+    j = len(text)
+    cigar_ops = []
+
+    # Traceback from bottom-right to top-left
+    while i > 0 or j > 0:
+        # Check diagonal movement first (match of substitution)
+        if i > 0 and j > 0:
+            cost = 0 if pattern[i-1] == text[j-1] else 1
+            if dp_matrix[i][j] == dp_matrix[i-1][j-1] + cost:
+                if cost == 0:
+                    cigar_ops.append('M')  # Match
+                else:
+                    cigar_ops.append('S')  # Substitution
+                i -= 1
+                j -= 1
+                continue
+        
+        # Check upward movement (deletion)
+        if i > 0 and dp_matrix[i][j] == dp_matrix[i-1][j] + 1:
+            cigar_ops.append('D')  # Deletion
+            i -= 1
+            continue
+
+        # Check left movement (insertion)
+        if j > 0 and dp_matrix[i][j] == dp_matrix[i][j-1] + 1:
+            cigar_ops.append('I')  # Insertion
+            j -= 1
+            continue
+
+    return "".join(reversed(cigar_ops))
+
 def print_dp_matrix(pattern, text, matrix):
     """
     Prints the complete Dynamic Programming matrix in a readable format to the console.
     This output can be copied directly into the answers.pdf report.
     """
-    print("\n=========================================================")
+    print("\n=============================================================")
     print("DYNAMIC PROGRAMMING MATRIX FOR THE FIRST SEQUENCE")
-    print("=========================================================")
+    print("=============================================================")
 
     # Print column headers (text characters)
-    header = "        -  " + "  ".join(text)
+    header = "      -  " + "  ".join(text)
     print(header)
 
     # Print each row of the matrix
@@ -59,7 +95,7 @@ def print_dp_matrix(pattern, text, matrix):
         row_label = pattern[i-1] if i > 0 else "-"
         row_str = f" {row_label} | " + " ".join(f"{val:2d}" for val in row)
         print(row_str)
-    print("=========================================================\n")
+    print("=============================================================\n")
 
 def parse_fasta_fragments(fasta_path):
     """
@@ -94,7 +130,8 @@ def parse_fasta_fragments(fasta_path):
 def main():
     # Setup command line arguments with default values required by the assignment
     input_fasta = sys.argv[1] if len(sys.argv) > 1 else "PM_50.fasta"
-    output_tsv = sys.argv[2] if len(sys.argv) > 2 else "distances.tsv"
+    out_distances = sys.argv[2] if len(sys.argv) > 2 else "distances.tsv"
+    out_alignments = sys.argv[3] if len(sys.argv) > 3 else "alignments.tsv"
     
     try:
         # Step 1: Parse all sequences from the FASTA file
@@ -108,27 +145,34 @@ def main():
         reference_pattern = first_full_seq[:18]
         
         # Step 3: Compute distances and write to the output TSV file
-        with open(output_tsv, 'w') as f_out:
-            f_out.write("Accession\tDistance\n")
-            
+        with open(out_distances, 'w') as f_dist, open(out_alignments, 'w') as f_aln:
+            f_dist.write("Accession\tDistance\n")
+            f_aln.write("Accession\tDistance\tCIGAR\n")
+
             for idx, (accession, full_seq) in enumerate(sequences):
                 # Extract the first 18 nucleotides of the current sequence
                 target_text = full_seq[:18]
                 
-                # Compute the DP matrix and the final minimum edit distance
+                # 1. Compute the DP matrix and the final minimum edit distance
                 matrix, distance = edit_distance_dp(reference_pattern, target_text)
+                # 2. Perform traceback to get CIGAR
+                cigar_string = get_cigar(reference_pattern, target_text, matrix)
                 
                 # Write record to TSV
-                f_out.write(f"{accession}\t{distance}\n")
-                
+                f_dist.write(f"{accession}\t{distance}\n")
+                f_aln.write(f"{accession}\t{distance}\t{cigar_string}\n")
+
                 # Requirement: Print the complete DP matrix for the first sequence
                 if idx == 0:
                     print_dp_matrix(reference_pattern, target_text, matrix)
+                    print(f"First sequence CIGAR: {cigar_string}")
                     
-        print(f"Success: Analysis completed. Results saved to '{output_tsv}'.")
+        print(f"Success: Analysis completed.")
+        print(f" - Distances saved to '{out_distances}'")
+        print(f" - Alignments saved to '{out_alignments}'")
         
     except FileNotFoundError:
-        print(f"Error: The file '{input_fasta}' was not found. Please check the path.")
+        print(f"Error: The file '{input_fasta}' was not found.")
 
 if __name__ == "__main__":
     main()
