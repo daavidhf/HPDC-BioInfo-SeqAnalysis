@@ -76,8 +76,51 @@ This will read the exact dependencies and versions and automatically build an id
 
 ### Output of `snakemake -n`
 
+```bash
+(hpdc_env) david@PC-SOBREMESA:~/URV/Q2/HPDC/Assignment3$ snakemake -n
+
+SNAKEMAKE
+=========
+  Date: 2026-06-14 23:27:27
+  Workflow ID: 5cf213e5-5d62-45d9-8051-7d39be2776c9
+  Platform: Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+  Host: PC-SOBREMESA
+  User: david
+  Snakemake version: 9.23.0
+  Python version: 3.13.14 | packaged by conda-forge | (main, Jun 12 2026, 09:50:25) [GCC 14.3.0]
+  Command: /home/david/miniconda3/envs/hpdc_env/bin/snakemake -n
+  Snakefile: /home/david/URV/Q2/HPDC/Assignment3/Snakefile
+  Base directory: /home/david/URV/Q2/HPDC/Assignment3
+  Run directory: /home/david/URV/Q2/HPDC/Assignment3
+  Working directory: /home/david/URV/Q2/HPDC/Assignment3
+  Config file(s): []
+  Config MD5: 99914b932bd37a50b983c5e7c90ae93b
+
+Building DAG of jobs...
+Nothing to be done (all requested files are present and up to date).
+2 jobs have missing provenance/metadata so that it in part cannot be used to trigger re-runs.
+Rules with missing metadata: align stats
+```
+
 ### Generated workflow DAG.
+![Snakemake Directed Acyclic Graph](dag.png)
 
 ### What each rule does?
 
+- **rule all:** This is the target rule of the workflow. It does not execute any command itself, but defines the final expected output files. Snakemake uses this rule to calculate the dependency graph and trigger all necessary previous steps.
+
+- **rule parse:** Reads the raw PM_50.fasta file and executes the parse_fasta.py script. It extracts the sequences, calculates their lengths, and outputs the results into sequences.tsv.
+
+- **rule align:** Takes the PM_50.fasta file as input and runs the alignment.py script. It computes the edit distance using a Dynamic Programming matrix and outputs two files: distances.tsv and alignments.tsv (which contains the CIGAR strings).
+
+- **rule stats:** Takes alignments.tsv as its input and executes the cigar_stats.py script. It uses regular expressions to count the alignment operations (M, I, D, X) and generates cigar_stats.tsv along with the final summary report.txt.
+
 ### Why Snakemake improves reproducibility compared with manually running each script?
+
+Snakemake significantly improves reproducibility for several key reasons:
+
+1. **Automation and Dependency Tracking:** It automatically determines the correct execution order using a Directed Acyclic Graph (DAG) based on input and output definitions. This eliminates human errors, such as running scripts in the wrong order or forgetting a step.
+
+2. **Smart Execution:** It tracks file modification times. If a single input file or script is updated, Snakemake only re-runs the specific steps affected by that change, rather than running the entire pipeline from scratch, saving computational time.
+
+3. **Executable Documentation:** The Snakefile serves as a clear, readable blueprint of the entire analysis. Any other researcher can understand exactly how raw data is transformed into final results and reproduce the exact same workflow with a single command (snakemake), regardless of the complexity of the underlying scripts.
