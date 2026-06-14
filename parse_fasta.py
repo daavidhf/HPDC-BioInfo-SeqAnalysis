@@ -5,7 +5,7 @@ def parse_fasta(input_file, output_file):
     # Regular expression to match FASTA headers
     # Search for lines starting with '>' (^>)
     # Ignore any optional whitespaces (\s*)
-    # Capture first character block withou spaces (\S+)
+    # Capture first character block without spaces (\S+)
     regex_accession = re.compile(r'^>\s*(\S+)')
     current_accession = None
     current_length = 0
