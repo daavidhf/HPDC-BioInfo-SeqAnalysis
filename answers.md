@@ -11,6 +11,32 @@ lang: en-US
 # 1. Dynamic Programming Edit Distance
 
 ### Complete Dynamic Programming matrix for the first sequence in the FASTA file
+```bash
+=============================================================
+DYNAMIC PROGRAMMING MATRIX FOR THE FIRST SEQUENCE
+=============================================================
+      -  A  A  G  t  t  a  a  g  a  t  a  a  a  a  a  c  a  a
+ - |  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18
+ A |  1  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
+ A |  2  1  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
+ G |  3  2  1  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+ t |  4  3  2  1  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14
+ t |  5  4  3  2  1  0  1  2  3  4  5  6  7  8  9 10 11 12 13
+ a |  6  5  4  3  2  1  0  1  2  3  4  5  6  7  8  9 10 11 12
+ a |  7  6  5  4  3  2  1  0  1  2  3  4  5  6  7  8  9 10 11
+ g |  8  7  6  5  4  3  2  1  0  1  2  3  4  5  6  7  8  9 10
+ a |  9  8  7  6  5  4  3  2  1  0  1  2  3  4  5  6  7  8  9
+ t | 10  9  8  7  6  5  4  3  2  1  0  1  2  3  4  5  6  7  8
+ a | 11 10  9  8  7  6  5  4  3  2  1  0  1  2  3  4  5  6  7
+ a | 12 11 10  9  8  7  6  5  4  3  2  1  0  1  2  3  4  5  6
+ a | 13 12 11 10  9  8  7  6  5  4  3  2  1  0  1  2  3  4  5
+ a | 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0  1  2  3  4
+ a | 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0  1  2  3
+ c | 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0  1  2
+ a | 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0  1
+ a | 18 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+=============================================================
+```
 
 ### What each cell $M(i,j)$ represents?
 Each cell $M(i,j)$ represents the minimum edit distance required to transform the first $i$ characters of the reference sequence (pattern[0:i]) into the first $j$ characters of the target sequence (text[0:j]). Finally, it stores the optimal solution to each smaller subproblem.
